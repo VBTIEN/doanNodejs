@@ -8,6 +8,8 @@ const {
     saveAccessToken,
     findUserByEmail,
 } = require('../utils/authUtils');
+const bcrypt = require('bcryptjs');
+const { forgotPasswordService, resetPasswordService, validateTokenService } = require('../services/passwordService');
 
 const register = async (req, res) => {
     try {
@@ -45,12 +47,18 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const { user, type } = await findUserByEmail(email);
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        let user;
+        user = await Teacher.findOne({ email });
+        if (!user) {
+            user = await Student.findOne({ email });
         }
 
-        const code = user[type === 'teacher' ? 'teacher_code' : 'student_code'];
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        const code = user.teacher_code || user.student_code;
+        const type = user.teacher_code ? 'teacher' : 'student';
         const token = generateToken(code, type);
         await saveAccessToken(token, code, type);
 
@@ -75,4 +83,56 @@ const getUser = (req, res) => {
     res.json(userData);
 };
 
-module.exports = { register, login, logout, getUser };
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const result = await forgotPasswordService(email);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { password, password_confirmation } = req.body;
+        const email = req.query.email;
+        const token = req.headers.authorization?.split(' ')[1];
+
+        if (!email || !token) {
+            return res.status(400).json({ message: 'Email và token là bắt buộc' });
+        }
+
+        if (!password || !password_confirmation) {
+            return res.status(400).json({ message: 'Mật khẩu và xác nhận mật khẩu là bắt buộc' });
+        }
+
+        const result = await resetPasswordService(email, token, password, password_confirmation);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ message: 'Bad request', error: error.message });
+    }
+};
+
+const validateToken = async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ message: 'Email là bắt buộc' });
+        }
+        const result = await validateTokenService(email);
+        
+        // Đảm bảo trả về JSON rõ ràng
+        return res.status(200).json({
+            token: result.token
+        });
+    } catch (error) {
+        console.error('Error in validateToken:', error);
+        return res.status(400).json({ 
+            success: false,
+            message: error.message || 'Bad request' 
+        });
+    }
+};
+
+module.exports = { register, login, logout, getUser, forgotPassword, resetPassword, validateToken };
