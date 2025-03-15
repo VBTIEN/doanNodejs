@@ -6,6 +6,7 @@ const studentSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     name: { type: String, required: true },
+    googleId: { type: String, unique: true },
     role_code: { type: String, ref: 'Role', required: true },
 }, {
     timestamps: true,
