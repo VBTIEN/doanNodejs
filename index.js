@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/database');
-const seedRoles = require('./config/seed');
+const { seedRoles, seedTerms, seedClassrooms, seedSubjects, seedExams, seedSchoolYears, seedGrades } = require('./config/seed');
 const authRoutes = require('./routes/auth');
 const cors = require('cors');
 
@@ -26,7 +26,13 @@ const startServer = async () => {
     try {
         await connectDB();
         await seedRoles();
-        console.log('Database connected and roles seeded successfully');
+        await seedSubjects();
+        await seedSchoolYears();
+        await seedTerms();
+        await seedExams();
+        await seedGrades();
+        await seedClassrooms();
+        console.log('Database connected and seeded successfully');
     } catch (error) {
         console.error('Server startup error:', error.message);
         process.exit(1);

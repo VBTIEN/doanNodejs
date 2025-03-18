@@ -10,10 +10,12 @@ const {
 } = require('../utils/authUtils');
 const bcrypt = require('bcryptjs');
 const { forgotPasswordService, resetPasswordService, validateTokenService } = require('../services/passwordService');
+const { validateAndAssignHomeroomTeacher } = require('../services/authService');
+const Classroom = require('../models/classroom');
 
 const register = async (req, res) => {
     try {
-        const { name, email, password, role_code } = req.body;
+        const { name, email, password, role_code, classroom_code } = req.body;
 
         if (await checkEmailExists(email)) {
             return res.status(422).json({ message: 'Email already exists' });
@@ -34,6 +36,11 @@ const register = async (req, res) => {
         }
 
         await user.save();
+
+        if (role_code === 'R1' && classroom_code) {
+            await validateAndAssignHomeroomTeacher(user, classroom_code);
+        }
+
         const token = generateToken(code, role_code === 'R1' ? 'teacher' : 'student');
         await saveAccessToken(token, code, role_code === 'R1' ? 'teacher' : 'student');
 

@@ -6,7 +6,7 @@ const teacherSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     name: { type: String, required: true },
-    googleId: { type: String, unique: true },
+    googleId: { type: String, unique: true, sparse: true },
     role_code: { type: String, ref: 'Role', required: true },
 }, {
     timestamps: true,
@@ -26,6 +26,31 @@ teacherSchema.statics.findByEmail = async function (email) {
 teacherSchema.statics.findByCode = async function (teacher_code) {
     return this.findOne({ teacher_code });
 };
+
+teacherSchema.virtual('classrooms', {
+    ref: 'ClassroomTeacher',
+    localField: 'teacher_code',
+    foreignField: 'teacher_code',
+});
+
+teacherSchema.virtual('subjects', {
+    ref: 'TeacherSubject',
+    localField: 'teacher_code',
+    foreignField: 'teacher_code',
+});
+
+teacherSchema.virtual('scores', {
+    ref: 'Score',
+    localField: 'teacher_code',
+    foreignField: 'subject_code',
+});
+
+teacherSchema.virtual('homeroomClass', {
+    ref: 'Classroom',
+    localField: 'teacher_code',
+    foreignField: 'homeroom_teacher_code',
+    justOne: true,
+});
 
 const Teacher = mongoose.model('Teacher', teacherSchema);
 module.exports = Teacher;
