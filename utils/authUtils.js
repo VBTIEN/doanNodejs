@@ -11,13 +11,21 @@ const checkEmailExists = async (email) => {
 
 const generateCode = async (role_code) => {
     if (role_code === 'R1') {
-        const latest = await Teacher.findOne().sort({ teacher_code: -1 });
-        const number = latest ? parseInt(latest.teacher_code.slice(1)) + 1 : 1;
-        return 'T' + number;
+        const latestTeacher = await Teacher.findOne().sort('-teacher_code');
+        const number = latestTeacher ? parseInt(latestTeacher.teacher_code.slice(1)) + 1 : 1;
+        return `T${number}`;
     } else if (role_code === 'R2') {
-        const latest = await Student.findOne().sort({ student_code: -1 });
-        const number = latest ? parseInt(latest.student_code.slice(1)) + 1 : 1;
-        return 'S' + number;
+        // Lấy tất cả student_code hiện có để tìm mã lớn nhất
+        const students = await Student.find({}, 'student_code');
+        let maxNumber = 0;
+
+        students.forEach(student => {
+            const number = parseInt(student.student_code.slice(1));
+            if (number > maxNumber) maxNumber = number;
+        });
+
+        const nextNumber = maxNumber + 1;
+        return `S${nextNumber}`;
     }
     throw new Error('Invalid role_code');
 };

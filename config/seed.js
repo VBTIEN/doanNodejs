@@ -53,7 +53,7 @@ const seedSchoolYears = async () => {
             console.log('Seeding school years...');
             const schoolYears = [
                 { school_year_code: 'SY_2024-2025', school_year_name: '2024-2025', createdAt: new Date(), updatedAt: new Date() },
-                { school_year_code: 'SY_2025-2026', school_year_name: '2025-2026', createdAt: new Date(), updatedAt: new Date() },
+                //{ school_year_code: 'SY_2025-2026', school_year_name: '2025-2026', createdAt: new Date(), updatedAt: new Date() },
             ];
             await SchoolYear.insertMany(schoolYears);
             console.log('School years seeded successfully');

@@ -36,7 +36,30 @@ const validateAndAssignHomeroomTeacher = async (user, classroomCode) => {
     await assignHomeroomTeacher(user, classroomCode);
 };
 
+/**
+ * Tự động xếp học sinh vào lớp dựa trên grade_code
+ * @param {string} gradeCode - Mã khối của học sinh
+ * @returns {Object} Đối tượng Classroom được gán
+ * @throws {Error} Nếu không có lớp trống
+ */
+const assignClassroomForStudent = async (gradeCode) => {
+    const classroom = await Classroom.findOne({
+        grade_code: gradeCode,
+        student_count: { $lt: 10 },
+    }).sort({ classroom_code: 1 }); // Sắp xếp tăng dần theo classroom_code
+
+    if (!classroom) {
+        throw new Error('No available classroom in this grade');
+    }
+
+    classroom.student_count += 1;
+    await classroom.save();
+
+    return classroom;
+};
+
 module.exports = {
     assignHomeroomTeacher,
     validateAndAssignHomeroomTeacher,
+    assignClassroomForStudent,
 };
