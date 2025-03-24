@@ -47,7 +47,7 @@ const seedStudents = async () => {
                     student_code: studentCode,
                     name: `Student ${gradePrefix} ${classroom.student_count + i}`,
                     email: `student${gradePrefix}${currentNumber}@example.com`,
-                    password: await bcrypt.hash('password123', 10), // Mã hóa mật khẩu
+                    password: 'password123', // Mã hóa mật khẩu
                     role_code: 'R2',
                     classroom_code: classroom.classroom_code,
                 };

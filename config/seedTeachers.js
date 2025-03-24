@@ -40,7 +40,7 @@ const seedTeachers = async () => {
                 const teacherData = {
                     teacher_code: teacherCode,
                     email: `teacher${teacherCounter}@example.com`,
-                    password: await bcrypt.hash('password', 10),
+                    password: 'password123',
                     name: `Teacher ${teacherCounter}`,
                     role_code: 'R1',
                 };
@@ -96,7 +96,7 @@ const seedTeachers = async () => {
                     const teacherData = {
                         teacher_code: teacherCode,
                         email: `teacher${teacherCounter}@example.com`,
-                        password: await bcrypt.hash('password', 10),
+                        password: 'password123',
                         name: `Teacher ${teacherCounter}`,
                         role_code: 'R1',
                     };

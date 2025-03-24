@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { getAllTeachers, getStudentsByClassroom, assignHomeroomClassroom, assignTeachingClassroom, getTeachersInClassroom } = require('../controllers/teacherController');
+const { getAllTeachers, getStudentsByClassroom, assignHomeroomClassroom, assignTeachingClassroom, getTeachersInClassroom, enterScores } = require('../controllers/teacherController');
 const RoleController = require('../controllers/roleController');
 const SchoolYearController = require('../controllers/schoolYearController');
 const ClassroomController = require('../controllers/classroomController');
@@ -9,6 +9,14 @@ const ExamController = require('../controllers/examController');
 const GradeController = require('../controllers/gradeController');
 const SubjectController = require('../controllers/subjectController');
 const TermController = require('../controllers/termController');
+const { getScores } = require('../controllers/studentController');
+const {
+    getClassroomYearlyRankings,
+    getGradeYearlyRankings,
+    getClassroomTermRankings,
+    getGradeTermRankings,
+} = require('../controllers/rankingController');
+const academicPerformanceController = require('../controllers/academicPerformanceController');
 const auth = require('../middleware/auth');
 const { redirectToGoogle, handleGoogleCallback, selectRole } = require('../controllers/googleController');
 
@@ -31,7 +39,18 @@ router.get('/exams', ExamController.getExams);
 router.get('/grades', GradeController.getGrades);
 router.get('/subjects', SubjectController.getSubjects);
 router.get('/terms', TermController.getTerms);
+
 router.get('/teachers-in-classroom', getTeachersInClassroom);
+
+router.post('/rankings/classroom-yearly', getClassroomYearlyRankings);
+router.post('/rankings/grade-yearly', getGradeYearlyRankings);
+router.post('/rankings/classroom-term', getClassroomTermRankings);
+router.post('/rankings/grade-term', getGradeTermRankings);
+
+router.post('/academic-performance/classroom-term', academicPerformanceController.getClassroomTermPerformance);
+router.post('/academic-performance/classroom-yearly', academicPerformanceController.getClassroomYearlyPerformance);
+router.post('/academic-performance/grade-term', academicPerformanceController.getGradeTermPerformance);
+router.post('/academic-performance/grade-yearly', academicPerformanceController.getGradeYearlyPerformance);
 
 router.use(auth);////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -42,5 +61,8 @@ router.get('/teachers', getAllTeachers);
 router.get('/students-by-classroom', getStudentsByClassroom);
 router.post('/assign-homeroom-classroom', assignHomeroomClassroom);
 router.post('/assign-teaching-classroom', assignTeachingClassroom);
+router.post('/teacher/enter-scores', enterScores);
+
+router.post('/student/scores', getScores);
 
 module.exports = router;
