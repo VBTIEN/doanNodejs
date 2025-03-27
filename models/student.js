@@ -9,6 +9,7 @@ const studentSchema = new mongoose.Schema({
     googleId: { type: String, unique: true, sparse: true },
     role_code: { type: String, ref: 'Role', required: true },
     classroom_code: { type: String, ref: 'Classroom' },
+    avatarUrl: { type: String, default: null},
 }, {
     timestamps: true,
 });

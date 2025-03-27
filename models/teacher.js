@@ -8,6 +8,7 @@ const teacherSchema = new mongoose.Schema({
     name: { type: String, required: true },
     googleId: { type: String, unique: true, sparse: true },
     role_code: { type: String, ref: 'Role', required: true },
+    avatarUrl: { type: String, default: null},
 }, {
     timestamps: true,
 });

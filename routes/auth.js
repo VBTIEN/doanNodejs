@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { getAllTeachers, getStudentsByClassroom, assignHomeroomClassroom, assignTeachingClassroom, getTeachersInClassroom, enterScores } = require('../controllers/teacherController');
+const { getAllTeachers, getStudentsByClassroom, assignHomeroomClassroom, assignTeachingClassroom, getTeachersInClassroom, enterScores, updateTeacher } = require('../controllers/teacherController');
 const RoleController = require('../controllers/roleController');
 const SchoolYearController = require('../controllers/schoolYearController');
 const ClassroomController = require('../controllers/classroomController');
@@ -9,7 +9,7 @@ const ExamController = require('../controllers/examController');
 const GradeController = require('../controllers/gradeController');
 const SubjectController = require('../controllers/subjectController');
 const TermController = require('../controllers/termController');
-const { getScores } = require('../controllers/studentController');
+const { getScores, updateStudent } = require('../controllers/studentController');
 const {
     getClassroomYearlyRankings,
     getGradeYearlyRankings,
@@ -19,6 +19,13 @@ const {
 const academicPerformanceController = require('../controllers/academicPerformanceController');
 const auth = require('../middleware/auth');
 const { redirectToGoogle, handleGoogleCallback, selectRole } = require('../controllers/googleController');
+const {
+    exportScores,
+    exportStudentTermAverages,
+    exportStudentYearlyAverages,
+} = require('../controllers/exportController');
+const { importScores } = require('../controllers/importController');
+const upload = require('../middleware/multerConfig');
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
@@ -52,6 +59,12 @@ router.post('/academic-performance/classroom-yearly', academicPerformanceControl
 router.post('/academic-performance/grade-term', academicPerformanceController.getGradeTermPerformance);
 router.post('/academic-performance/grade-yearly', academicPerformanceController.getGradeYearlyPerformance);
 
+router.get('/export-scores', exportScores);
+router.get('/export-student-term-averages', exportStudentTermAverages);
+router.get('/export-student-yearly-averages', exportStudentYearlyAverages);
+
+router.post('/import-scores', upload.single('file'), importScores);
+
 router.use(auth);////////////////////////////////////////////////////////////////////////////////////////////////
 
 router.post('/logout', authController.logout);
@@ -62,7 +75,9 @@ router.get('/students-by-classroom', getStudentsByClassroom);
 router.post('/assign-homeroom-classroom', assignHomeroomClassroom);
 router.post('/assign-teaching-classroom', assignTeachingClassroom);
 router.post('/teacher/enter-scores', enterScores);
+router.put('/teacher/update', updateTeacher);
 
 router.post('/student/scores', getScores);
+router.put('/student/update', updateStudent);
 
 module.exports = router;

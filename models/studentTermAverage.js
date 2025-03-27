@@ -11,4 +11,24 @@ const studentTermAverageSchema = new mongoose.Schema({
     timestamps: true,
 });
 
+// Thêm virtual để populate student
+studentTermAverageSchema.virtual('student', {
+    ref: 'Student',
+    localField: 'student_code',
+    foreignField: 'student_code',
+    justOne: true,
+});
+
+// Thêm virtual để populate term
+studentTermAverageSchema.virtual('term', {
+    ref: 'Term',
+    localField: 'term_code',
+    foreignField: 'term_code',
+    justOne: true,
+});
+
+// Bật virtuals trong toObject và toJSON
+studentTermAverageSchema.set('toObject', { virtuals: true });
+studentTermAverageSchema.set('toJSON', { virtuals: true });
+
 module.exports = mongoose.model('StudentTermAverage', studentTermAverageSchema);

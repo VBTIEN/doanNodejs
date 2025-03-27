@@ -137,6 +137,22 @@ const enterScores = async (req, res) => {
     }
 };
 
+/**
+ * Cập nhật thông tin giáo viên
+ * Chỉ giáo viên (role_code = 'R1') mới được phép thực hiện
+ */
+const updateTeacher = async (req, res) => {
+    try {
+        ensureTeacher(req.user);
+
+        const updatedTeacher = await TeacherService.updateTeacher(req, req.user);
+        return success(res, updatedTeacher, 'Cập nhật thông tin giáo viên thành công');
+    } catch (error) {
+        const statusCode = error.message.includes('Không có quyền') ? 403 : 400;
+        return fail(res, error.message || 'Lỗi server', null, statusCode);
+    }
+};
+
 module.exports = {
     getAllTeachers,
     getStudentsByClassroom,
@@ -144,4 +160,5 @@ module.exports = {
     assignTeachingClassroom,
     getTeachersInClassroom,
     enterScores,
+    updateTeacher, // Thêm hàm updateTeacher
 };

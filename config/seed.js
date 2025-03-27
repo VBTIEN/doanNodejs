@@ -53,7 +53,6 @@ const seedSchoolYears = async () => {
             console.log('Seeding school years...');
             const schoolYears = [
                 { school_year_code: 'SY_2024-2025', school_year_name: '2024-2025', createdAt: new Date(), updatedAt: new Date() },
-                //{ school_year_code: 'SY_2025-2026', school_year_name: '2025-2026', createdAt: new Date(), updatedAt: new Date() },
             ];
             await SchoolYear.insertMany(schoolYears);
             console.log('School years seeded successfully');
@@ -115,25 +114,25 @@ const seedGrades = async () => {
             for (const schoolYear of schoolYears) {
                 const [startYear, endYear] = schoolYear.school_year_name.split('-');
                 grades.push({
-                    grade_code: `G10_${schoolYear.school_year_code}`, // Ví dụ: G10_SY_2024-2025
+                    grade_code: `G10_${schoolYear.school_year_code}`,
                     grade_name: `Khối 10 Năm ${schoolYear.school_year_name}`,
-                    classroom_count: 0, // Giá trị mặc định
+                    classroom_count: 0,
                     school_year_code: schoolYear.school_year_code,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 });
                 grades.push({
-                    grade_code: `G11_${schoolYear.school_year_code}`, // Ví dụ: G11_SY_2024-2025
+                    grade_code: `G11_${schoolYear.school_year_code}`,
                     grade_name: `Khối 11 Năm ${schoolYear.school_year_name}`,
-                    classroom_count: 0, // Giá trị mặc định
+                    classroom_count: 0,
                     school_year_code: schoolYear.school_year_code,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 });
                 grades.push({
-                    grade_code: `G12_${schoolYear.school_year_code}`, // Ví dụ: G12_SY_2024-2025
+                    grade_code: `G12_${schoolYear.school_year_code}`,
                     grade_name: `Khối 12 Năm ${schoolYear.school_year_name}`,
-                    classroom_count: 0, // Giá trị mặc định
+                    classroom_count: 0,
                     school_year_code: schoolYear.school_year_code,
                     createdAt: new Date(),
                     updatedAt: new Date(),
@@ -161,7 +160,7 @@ const seedClassrooms = async () => {
             for (const grade of grades) {
                 if (grade.grade_code.includes('G10')) {
                     classrooms.push({
-                        classroom_code: `C1_${grade.grade_code}`, // Ví dụ: C1_G10_SY_2024-2025
+                        classroom_code: `C1_${grade.grade_code}`,
                         classroom_name: '10A',
                         grade_code: grade.grade_code,
                         student_count: 0,
@@ -170,7 +169,7 @@ const seedClassrooms = async () => {
                         updatedAt: new Date(),
                     });
                     classrooms.push({
-                        classroom_code: `C2_${grade.grade_code}`, // Ví dụ: C2_G10_SY_2024-2025
+                        classroom_code: `C2_${grade.grade_code}`,
                         classroom_name: '10B',
                         grade_code: grade.grade_code,
                         student_count: 0,
@@ -180,7 +179,7 @@ const seedClassrooms = async () => {
                     });
                 } else if (grade.grade_code.includes('G11')) {
                     classrooms.push({
-                        classroom_code: `C3_${grade.grade_code}`, // Ví dụ: C3_G11_SY_2024-2025
+                        classroom_code: `C3_${grade.grade_code}`,
                         classroom_name: '11A',
                         grade_code: grade.grade_code,
                         student_count: 0,
@@ -189,7 +188,7 @@ const seedClassrooms = async () => {
                         updatedAt: new Date(),
                     });
                     classrooms.push({
-                        classroom_code: `C4_${grade.grade_code}`, // Ví dụ: C4_G11_SY_2024-2025
+                        classroom_code: `C4_${grade.grade_code}`,
                         classroom_name: '11B',
                         grade_code: grade.grade_code,
                         student_count: 0,
@@ -199,7 +198,7 @@ const seedClassrooms = async () => {
                     });
                 } else if (grade.grade_code.includes('G12')) {
                     classrooms.push({
-                        classroom_code: `C5_${grade.grade_code}`, // Ví dụ: C5_G12_SY_2024-2025
+                        classroom_code: `C5_${grade.grade_code}`,
                         classroom_name: '12A',
                         grade_code: grade.grade_code,
                         student_count: 0,
@@ -208,7 +207,7 @@ const seedClassrooms = async () => {
                         updatedAt: new Date(),
                     });
                     classrooms.push({
-                        classroom_code: `C6_${grade.grade_code}`, // Ví dụ: C6_G12_SY_2024-2025
+                        classroom_code: `C6_${grade.grade_code}`,
                         classroom_name: '12B',
                         grade_code: grade.grade_code,
                         student_count: 0,
@@ -241,8 +240,16 @@ const seedExams = async () => {
         const examCount = await Exam.countDocuments();
         if (examCount === 0) {
             console.log('Seeding exams...');
-            const subjects = await Subject.find({}, 'subject_code');
-            const terms = await Term.find({}, 'term_code start_date end_date');
+            const subjects = await Subject.find({}, 'subject_code subject_name');
+            const terms = await Term.find({}, 'term_code start_date end_date school_year_code');
+            const schoolYears = await SchoolYear.find({}, 'school_year_code school_year_name');
+            
+            // Tạo map để tra cứu nhanh
+            const schoolYearMap = schoolYears.reduce((map, sy) => {
+                map[sy.school_year_code] = sy.school_year_name;
+                return map;
+            }, {});
+
             const exams = [];
             let examCounter = 1;
 
@@ -252,11 +259,19 @@ const seedExams = async () => {
                     const endDate = new Date(term.end_date);
                     const diffInDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
 
+                    // Xác định học kỳ từ term_code
+                    const termNumber = term.term_code.split('_')[0]; // Lấy T1 hoặc T2
+                    const termName = termNumber === 'T1' ? 'Học kỳ 1' : 'Học kỳ 2';
+
+                    // Lấy school_year_name từ school_year_code
+                    const schoolYearName = schoolYearMap[term.school_year_code];
+
+                    // Tạo exam_name cho kỳ thi giữa kỳ
                     const midDate = new Date(startDate);
                     midDate.setDate(startDate.getDate() + Math.floor(diffInDays / 3));
                     exams.push({
                         exam_code: `E${examCounter}`,
-                        exam_name: 'Thi giữa kỳ',
+                        exam_name: `Thi giữa ${termName} môn ${subject.subject_name} năm học ${schoolYearName}`,
                         subject_code: subject.subject_code,
                         term_code: term.term_code,
                         date: midDate,
@@ -265,11 +280,12 @@ const seedExams = async () => {
                     });
                     examCounter++;
 
+                    // Tạo exam_name cho kỳ thi cuối kỳ
                     const finalDate = new Date(endDate);
                     finalDate.setDate(endDate.getDate() - Math.floor(diffInDays / 6));
                     exams.push({
                         exam_code: `E${examCounter}`,
-                        exam_name: 'Thi cuối kỳ',
+                        exam_name: `Thi cuối ${termName} môn ${subject.subject_name} năm học ${schoolYearName}`,
                         subject_code: subject.subject_code,
                         term_code: term.term_code,
                         date: finalDate,

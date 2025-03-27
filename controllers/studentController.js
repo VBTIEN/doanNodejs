@@ -37,6 +37,23 @@ const getScores = async (req, res) => {
     }
 };
 
+/**
+ * Cập nhật thông tin học sinh
+ * Chỉ học sinh (role_code = 'R2') mới được phép thực hiện
+ */
+const updateStudent = async (req, res) => {
+    try {
+        ensureStudent(req.user);
+
+        const updatedStudent = await StudentService.updateStudent(req, req.user);
+        return success(res, updatedStudent, 'Cập nhật thông tin học sinh thành công');
+    } catch (error) {
+        const statusCode = error.message.includes('Không có quyền') ? 403 : 400;
+        return fail(res, error.message || 'Lỗi server', null, statusCode);
+    }
+};
+
 module.exports = {
     getScores,
+    updateStudent, // Thêm hàm updateStudent
 };
