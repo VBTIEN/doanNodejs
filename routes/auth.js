@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { getAllTeachers, getStudentsByClassroom, assignHomeroomClassroom, assignTeachingClassroom, getTeachersInClassroom, enterScores, updateTeacher } = require('../controllers/teacherController');
+const { getAllTeachers, getStudentsByClassroom, assignHomeroomClassroom, assignTeachingClassroom, getTeachersInClassroom, enterScores, updateTeacher, getClassroomScores } = require('../controllers/teacherController');
 const RoleController = require('../controllers/roleController');
 const SchoolYearController = require('../controllers/schoolYearController');
 const ClassroomController = require('../controllers/classroomController');
@@ -76,6 +76,7 @@ router.post('/assign-homeroom-classroom', assignHomeroomClassroom);
 router.post('/assign-teaching-classroom', assignTeachingClassroom);
 router.post('/teacher/enter-scores', enterScores);
 router.put('/teacher/update', updateTeacher);
+router.post('/teacher/classroom-scores', getClassroomScores);
 
 router.post('/student/scores', getScores);
 router.put('/student/update', updateStudent);

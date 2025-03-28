@@ -243,6 +243,85 @@ async function enterScores(teacher, classroomCode, examCode, scores) {
 }
 
 /**
+ * Lấy danh sách điểm của một lớp mà giáo viên dạy.
+ * @param {Object} teacher - Giáo viên hiện tại
+ * @param {string} classroomCode - Mã lớp học
+ * @param {string} [examCode] - Mã bài kiểm tra (tùy chọn)
+ * @param {string} [subjectCode] - Mã môn học (tùy chọn)
+ * @returns {Array} - Danh sách điểm của học sinh
+ */
+async function getClassroomScores(teacher, classroomCode, examCode = null, subjectCode = null) {
+    // Kiểm tra lớp học có tồn tại không
+    const classroom = await Classroom.findOne({ classroom_code: classroomCode });
+    if (!classroom) {
+        throw new Error('Không tìm thấy lớp học');
+    }
+
+    // Kiểm tra xem giáo viên có dạy lớp này không
+    const teacherSubjects = await ClassroomTeacher.find({
+        classroom_code: classroomCode,
+        teacher_code: teacher.teacher_code,
+    }).select('subject_code');
+
+    if (!teacherSubjects.length) {
+        throw new Error('Bạn không dạy lớp này');
+    }
+
+    // Nếu có subjectCode, kiểm tra xem giáo viên có dạy môn đó trong lớp này không
+    let subjectsToQuery = teacherSubjects.map(ts => ts.subject_code);
+    if (subjectCode) {
+        if (!subjectsToQuery.includes(subjectCode)) {
+            throw new Error('Bạn không dạy môn này trong lớp này');
+        }
+        subjectsToQuery = [subjectCode];
+    }
+
+    // Kiểm tra examCode nếu có
+    if (examCode) {
+        const exam = await Exam.findOne({ exam_code: examCode });
+        if (!exam) {
+            throw new Error('Không tìm thấy bài kiểm tra');
+        }
+        // Kiểm tra xem bài kiểm tra có thuộc môn mà giáo viên dạy không
+        if (!subjectsToQuery.includes(exam.subject_code)) {
+            throw new Error('Bài kiểm tra không thuộc môn bạn dạy trong lớp này');
+        }
+    }
+
+    // Lấy danh sách học sinh trong lớp
+    const students = await Student.find({ classroom_code: classroomCode });
+    const studentCodes = students.map(student => student.student_code);
+    if (!studentCodes.length) {
+        throw new Error('Lớp không có học sinh nào');
+    }
+
+    // Lấy danh sách điểm
+    let query = Score.find({ student_code: { $in: studentCodes } })
+        .populate({
+            path: 'exam',
+            match: { subject_code: { $in: subjectsToQuery } },
+        })
+        .lean();
+
+    if (examCode) {
+        query = query.where('exam_code').equals(examCode);
+    }
+
+    const scores = await query.exec();
+
+    // Lọc bỏ các score không có exam (do populate match không khớp)
+    const filteredScores = scores
+        .filter(score => score.exam) // Chỉ giữ lại score có exam khớp với subject_code
+        .map(score => ({
+            student_code: score.student_code,
+            exam_code: score.exam_code,
+            score_value: score.score_value,
+        }));
+
+    return filteredScores;
+}
+
+/**
  * Lấy danh sách tất cả giáo viên
  * @returns {Array} - Danh sách giáo viên
  */
@@ -415,6 +494,7 @@ module.exports = {
     getRemainingSubjects,
     getTeachersInClassroom,
     enterScores,
+    getClassroomScores,
     getAllTeachers,
     getStudentsByClassroom,
     assignHomeroomClassroom,

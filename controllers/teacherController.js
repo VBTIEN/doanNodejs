@@ -138,6 +138,28 @@ const enterScores = async (req, res) => {
 };
 
 /**
+ * Lấy danh sách điểm của một lớp mà giáo viên dạy
+ * Chỉ giáo viên (role_code = 'R1') mới được phép thực hiện
+ */
+const getClassroomScores = async (req, res) => {
+    try {
+        ensureTeacher(req.user);
+
+        const { classroom_code, exam_code, subject_code } = req.body;
+
+        if (!classroom_code) {
+            return fail(res, 'classroom_code là bắt buộc', null, 422);
+        }
+
+        const scores = await TeacherService.getClassroomScores(req.user, classroom_code, exam_code, subject_code);
+        return success(res, scores, 'Lấy danh sách điểm của lớp thành công');
+    } catch (error) {
+        const statusCode = error.message.includes('Không có quyền') ? 403 : 400;
+        return fail(res, error.message || 'Lỗi server', null, statusCode);
+    }
+};
+
+/**
  * Cập nhật thông tin giáo viên
  * Chỉ giáo viên (role_code = 'R1') mới được phép thực hiện
  */
@@ -160,5 +182,6 @@ module.exports = {
     assignTeachingClassroom,
     getTeachersInClassroom,
     enterScores,
-    updateTeacher, // Thêm hàm updateTeacher
+    getClassroomScores,
+    updateTeacher,
 };
