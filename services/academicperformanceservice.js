@@ -35,7 +35,7 @@ const getClassroomTermPerformance = async (classroomCode, termCode, academicPerf
     const studentsWithPerformance = await StudentTermAverage.find({
         term_code: termCode,
         student_code: { $in: studentCodes },
-        academic_performance: academicPerformance,
+        academic_performance: academicPerformance, // Sử dụng academicPerformance thay vì academic_performance
     }).select('student_code term_average academic_performance');
 
     if (!studentsWithPerformance.length) {
@@ -92,7 +92,7 @@ const getClassroomYearlyPerformance = async (classroomCode, academicPerformance)
     const studentsWithPerformance = await StudentYearlyAverage.find({
         school_year_code,
         student_code: { $in: studentCodes },
-        academic_performance,
+        academic_performance: academicPerformance, // Sử dụng academicPerformance thay vì academic_performance
     }).select('student_code yearly_average academic_performance');
 
     if (!studentsWithPerformance.length) {
@@ -145,7 +145,7 @@ const getGradeTermPerformance = async (gradeCode, termCode, academicPerformance)
     const studentsWithPerformance = await StudentTermAverage.find({
         term_code: termCode,
         student_code: { $in: studentCodes },
-        academic_performance,
+        academic_performance: academicPerformance, // Sử dụng academicPerformance thay vì academic_performance
     }).select('student_code term_average academic_performance');
 
     if (!studentsWithPerformance.length) {
@@ -205,7 +205,7 @@ const getGradeYearlyPerformance = async (gradeCode, academicPerformance) => {
     const studentsWithPerformance = await StudentYearlyAverage.find({
         school_year_code,
         student_code: { $in: studentCodes },
-        academic_performance,
+        academic_performance: academicPerformance, // Sử dụng academicPerformance thay vì academic_performance
     }).select('student_code yearly_average academic_performance');
 
     if (!studentsWithPerformance.length) {

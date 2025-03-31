@@ -21,11 +21,13 @@ const auth = require('../middleware/auth');
 const { redirectToGoogle, handleGoogleCallback, selectRole } = require('../controllers/googleController');
 const {
     exportScores,
+    exportStudentScores,
     exportStudentTermAverages,
     exportStudentYearlyAverages,
 } = require('../controllers/exportController');
 const { importScores } = require('../controllers/importController');
 const upload = require('../middleware/multerConfig');
+const AIController = require('../controllers/AIController');
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
@@ -65,6 +67,8 @@ router.get('/export-student-yearly-averages', exportStudentYearlyAverages);
 
 router.post('/import-scores', upload.single('file'), importScores);
 
+router.post('/ai/ask', AIController.ask);
+
 router.use(auth);////////////////////////////////////////////////////////////////////////////////////////////////
 
 router.post('/logout', authController.logout);
@@ -80,5 +84,6 @@ router.post('/teacher/classroom-scores', getClassroomScores);
 
 router.post('/student/scores', getScores);
 router.put('/student/update', updateStudent);
+router.post('/export/student-scores', exportStudentScores);
 
 module.exports = router;

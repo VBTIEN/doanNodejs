@@ -39,6 +39,7 @@ async function getStudentScores(studentCode, subjectCode = null, termCode = null
                 exam_code: 1,
                 term_code: '$exam.term_code',
                 subject_code: '$exam.subject_code',
+                date: '$exam.date', // Thêm trường date từ collection exams
                 score_value: 1,
                 _id: 0, // Loại bỏ trường _id
             },

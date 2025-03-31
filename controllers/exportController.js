@@ -8,6 +8,100 @@ const SchoolYear = require('../models/schoolYear');
 const StudentTermAverage = require('../models/studentTermAverage');
 const StudentYearlyAverage = require('../models/studentYearlyAverage');
 
+/**
+ * Kiểm tra người dùng có phải là học sinh không
+ * @param {Object} user - Đối tượng người dùng từ request
+ * @throws {Error} Nếu không phải học sinh
+ */
+const ensureStudent = (user) => {
+    if (!user || user.role_code !== 'R2') {
+        throw new Error('Không có quyền truy cập. Chỉ học sinh mới được phép.');
+    }
+};
+
+/**
+ * Export điểm của học sinh đã xác thực
+ */
+const exportStudentScores = async (req, res) => {
+    try {
+        // Kiểm tra người dùng có phải là học sinh không
+        ensureStudent(req.user);
+
+        console.log('Starting exportStudentScores for student: ' + req.user.student_code);
+
+        // Lấy điểm của học sinh đã xác thực
+        const scores = await Score.find({ student_code: req.user.student_code })
+            .populate('student', 'name')
+            .populate('exam', 'exam_name');
+
+        if (!scores.length) {
+            console.log('No scores found for student: ' + req.user.student_code);
+            return res.status(404).json({
+                status: 'error',
+                message: 'Không tìm thấy điểm nào để export.',
+            });
+        }
+
+        // Tạo file Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('My Scores');
+        worksheet.columns = [
+            { header: 'Student Code', key: 'student_code', width: 15 },
+            { header: 'Name', key: 'name', width: 20 },
+            { header: 'Exam Name', key: 'exam_name', width: 40 },
+            { header: 'Score Value', key: 'score_value', width: 15 },
+        ];
+        worksheet.getRow(1).font = { bold: true };
+
+        scores.forEach((score) => {
+            if (!score.student || !score.exam) return;
+            worksheet.addRow({
+                student_code: score.student_code,
+                name: score.student.name || 'N/A',
+                exam_name: score.exam.exam_name || 'N/A',
+                score_value: score.score_value,
+            });
+        });
+
+        if (worksheet.rowCount === 1) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Không tìm thấy điểm hợp lệ để export.',
+            });
+        }
+
+        // Lưu file Excel vào buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Upload file lên CDN
+        const cdnResponse = await axios.post(
+            'http://localhost:4000/cdn/upload-scores?type=js',
+            buffer,
+            {
+                headers: { 'Content-Type': 'application/octet-stream' },
+            }
+        );
+
+        const fileUrl = `http://localhost:4000${cdnResponse.data.url}`;
+        res.json({
+            status: 'success',
+            message: 'Điểm của bạn đã được export thành công',
+            url: fileUrl,
+            downloadUrl: `http://localhost:4000/cdn/download/${cdnResponse.data.url.split('/').pop()}`,
+        });
+    } catch (error) {
+        console.error(`Error in exportStudentScores: ${error.message}`);
+        const statusCode = error.message.includes('Không có quyền') ? 403 : 500;
+        return res.status(statusCode).json({
+            status: 'error',
+            message: error.message.includes('Không có quyền')
+                ? error.message
+                : 'Lỗi khi export điểm của bạn',
+            error: error.message,
+        });
+    }
+};
+
 const exportScores = async (req, res) => {
     try {
         console.log('Starting exportScores...');
@@ -181,6 +275,7 @@ const exportStudentYearlyAverages = async (req, res) => {
 
 module.exports = {
     exportScores,
+    exportStudentScores,
     exportStudentTermAverages,
     exportStudentYearlyAverages,
 };
