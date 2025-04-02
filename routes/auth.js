@@ -86,4 +86,10 @@ router.post('/student/scores', getScores);
 router.put('/student/update', updateStudent);
 router.post('/export/student-scores', exportStudentScores);
 
+// Thêm các route CRUD cho Classroom
+router.post('/classrooms', ClassroomController.createClassroom);
+router.get('/classrooms/:classroom_code', ClassroomController.getClassroomByCode);
+router.put('/classrooms/:classroom_code', ClassroomController.updateClassroom);
+router.delete('/classrooms/:classroom_code', ClassroomController.deleteClassroom);
+
 module.exports = router;
