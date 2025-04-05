@@ -9,7 +9,7 @@ const Student = require('../models/student');
 const Classroom = require('../models/classroom');
 
 // Kiểm tra Score ngay sau khi import
-console.log('Score in averageService.js:', Score);
+// console.log('Score in averageService.js:', Score);
 if (!Score || typeof Score.find !== 'function') {
     throw new Error('Score is not a valid Mongoose model in averageService.js');
 }

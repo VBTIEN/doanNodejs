@@ -94,9 +94,9 @@ const resetPasswordService = async (email, token, password, passwordConfirmation
     }
 
     user.password = password;
-    console.log('Before saving user:', user); // Debug
+    //console.log('Before saving user:', user); // Debug
     await user.save();
-    console.log('After saving user:', user); // Debug
+    //console.log('After saving user:', user); // Debug
 
     await PasswordResetToken.deleteOne({ email, token });
 

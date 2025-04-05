@@ -3,12 +3,12 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const { getAllTeachers, getStudentsByClassroom, assignHomeroomClassroom, assignTeachingClassroom, getTeachersInClassroom, enterScores, updateTeacher, getClassroomScores } = require('../controllers/teacherController');
 const RoleController = require('../controllers/roleController');
-const SchoolYearController = require('../controllers/schoolYearController');
+const { getSchoolYears, createSchoolYear, getSchoolYearByCode, updateSchoolYear, deleteSchoolYear } = require('../controllers/schoolYearController');
 const ClassroomController = require('../controllers/classroomController');
-const ExamController = require('../controllers/examController');
-const GradeController = require('../controllers/gradeController');
-const SubjectController = require('../controllers/subjectController');
-const TermController = require('../controllers/termController');
+const { getExams, createExam, getExamByCode, updateExam, deleteExam } = require('../controllers/examController');
+const { getGrades, createGrade, getGradeByCode, updateGrade, deleteGrade } = require('../controllers/gradeController');
+const { getSubjects, createSubject, getSubjectByCode, updateSubject, deleteSubject } = require('../controllers/subjectController');
+const { getTerms, createTerm, getTermByCode, updateTerm, deleteTerm } = require('../controllers/termController');
 const { getScores, updateStudent } = require('../controllers/studentController');
 const {
     getClassroomYearlyRankings,
@@ -42,12 +42,12 @@ router.get('/auth/google/callback', handleGoogleCallback);
 router.post('/select-role', express.json(), selectRole);
 
 router.get('/roles', RoleController.getRoles);
-router.get('/school-years', SchoolYearController.getSchoolYears);
+router.get('/school-years', getSchoolYears);
 router.get('/classrooms', ClassroomController.getClassrooms);
-router.get('/exams', ExamController.getExams);
-router.get('/grades', GradeController.getGrades);
-router.get('/subjects', SubjectController.getSubjects);
-router.get('/terms', TermController.getTerms);
+router.get('/exams', getExams);
+router.get('/grades', getGrades);
+router.get('/subjects', getSubjects);
+router.get('/terms', getTerms);
 
 router.get('/teachers-in-classroom', getTeachersInClassroom);
 
@@ -91,5 +91,35 @@ router.post('/classrooms', ClassroomController.createClassroom);
 router.get('/classrooms/:classroom_code', ClassroomController.getClassroomByCode);
 router.put('/classrooms/:classroom_code', ClassroomController.updateClassroom);
 router.delete('/classrooms/:classroom_code', ClassroomController.deleteClassroom);
+
+// Thêm các route CRUD cho Exam
+router.post('/exams', createExam);
+router.get('/exams/:exam_code', getExamByCode);
+router.put('/exams/:exam_code', updateExam);
+router.delete('/exams/:exam_code', deleteExam);
+
+// Thêm các route CRUD cho Grade
+router.post('/grades', createGrade);
+router.get('/grades/:grade_code', getGradeByCode);
+router.put('/grades/:grade_code', updateGrade);
+router.delete('/grades/:grade_code', deleteGrade);
+
+// Thêm các route CRUD cho SchoolYear
+router.post('/school-years', createSchoolYear);
+router.get('/school-years/:school_year_code', getSchoolYearByCode);
+router.put('/school-years/:school_year_code', updateSchoolYear);
+router.delete('/school-years/:school_year_code', deleteSchoolYear);
+
+// Thêm các route CRUD cho Subject
+router.post('/subjects', createSubject);
+router.get('/subjects/:subject_code', getSubjectByCode);
+router.put('/subjects/:subject_code', updateSubject);
+router.delete('/subjects/:subject_code', deleteSubject);
+
+// Thêm các route CRUD cho Term
+router.post('/terms', createTerm);
+router.get('/terms/:term_code', getTermByCode);
+router.put('/terms/:term_code', updateTerm);
+router.delete('/terms/:term_code', deleteTerm);
 
 module.exports = router;
